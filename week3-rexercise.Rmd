@@ -4,12 +4,35 @@ output:
 date: "`r Sys.Date()`"
 ---
 
-
 ```{r}
+rm(list = ls())
 
-
+library(tidyverse)
 ```
 
+```{r}
+ws <- read_delim("caro60.csv")
+```
+
+
+Task 1: Segmentation
+
+The sampling interval for this dataset is 1 minute. Use a temporal window v of 6 minutes, i.e. a window size of 6 positions (n±3).
+
+```{r}
+ws_seg <- ws %>% 
+    mutate(
+        nMinus3 = sqrt((lag(E,3) - E)^2 + (lag(N,3) - N)^2),
+        nMinus2 = sqrt((lag(E,2) - E)^2 + (lag(N,2) - N)^2),
+        nMinus1 = sqrt((lag(E,1) - E)^2 + (lag(N,1) - N)^2),
+        nPlus1  = sqrt((E - lead(E,1))^2 + (N - lead(N,1))^2),
+        nPlus2  = sqrt((E - lead(E,2))^2 + (N - lead(N,2))^2),
+        nPlus3  = sqrt((E - lead(E,3))^2 + (N - lead(N,3))^2)
+    )
+```
+
+
+# Task 2: Specify and apply threshold d
 
 ```{r}
 
