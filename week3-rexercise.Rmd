@@ -15,7 +15,7 @@ ws <- read_delim("caro60.csv")
 ```
 
 
-Task 1: Segmentation
+# Task 1: Segmentation
 
 The sampling interval for this dataset is 1 minute. Use a temporal window v of 6 minutes, i.e. a window size of 6 positions (n±3).
 
@@ -48,7 +48,7 @@ ws_seg <- ws_seg %>%
 ```{r}
 d <- mean(ws_seg$stepMean, na.rm = TRUE) # -> threshold d
 
-ws_seg$static <- ws_seg$stepMean < d
+ws_seg$static <- ws_seg$stepMean <= d
 
 ```
 
@@ -56,10 +56,13 @@ ws_seg$static <- ws_seg$stepMean < d
 # Task 3: Visualize segmented trajectories
 
 ```{r}
-
-
+ggplot(ws_seg, aes(x = E, y = N)) +
+    geom_path() + 
+    geom_point(aes(colour = static)) +
+    coord_equal()
 ```
 
+# Task 4: Segment-based analysis
 
 ```{r}
 
