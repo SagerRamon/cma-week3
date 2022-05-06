@@ -32,13 +32,18 @@ ws_seg <- ws %>%
 ```
 
 
-# Task 2: Specify and apply threshold d
-
 ```{r}
-
+ws_seg <- ws_seg %>%
+    rowwise() %>% 
+    mutate(
+        stepMean = mean(c(nMinus3, nMinus2, nMinus1, nPlus1, nPlus2, nPlus3))
+    ) %>% 
+    ungroup()
 
 ```
 
+
+# Task 2: Specify and apply threshold d
 
 ```{r}
 
