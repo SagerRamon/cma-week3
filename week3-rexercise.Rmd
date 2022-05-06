@@ -46,11 +46,14 @@ ws_seg <- ws_seg %>%
 # Task 2: Specify and apply threshold d
 
 ```{r}
+d <- mean(ws_seg$stepMean, na.rm = TRUE) # -> threshold d
 
+ws_seg$static <- ws_seg$stepMean < d
 
 ```
 
 
+# Task 3: Visualize segmented trajectories
 
 ```{r}
 
