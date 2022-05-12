@@ -141,13 +141,27 @@ ws_seg %>% filter(static == FALSE) %>%
 # Task 5: Similarity Measures
 
 ```{r}
-
-
+peds <- read_delim("pedestrian.csv")
+peds$TrajID <- as.factor(peds$TrajID)
 ```
 
 
 ```{r}
+ggplot(data = peds, aes(E, N)) +
+    geom_point(data = peds[,2:4], color="grey", alpha = 0.4) +
+    geom_point(aes(alpha = TrajID)) +
+    geom_point(aes(colour = as.factor(TrajID))) +
+    facet_wrap(~TrajID, labeller = labeller(TrajID = c("1" = "TrajID: 1", "2" = "TrajID: 2", "3" = "TrajID: 3", "4" = "TrajID: 4", "5" = "TrajID: 5", "6" = "TrajID: 6"))) +
+    geom_path(aes(color = TrajID)) +                 
+    theme(legend.position = "none") +
+    labs(title = "Visual comparison of the 6 trajectories", subtitle = "Each subplot highlights a trajectory") +
+    coord_equal()
+```
 
+# Task 6: Calculate similarity
+
+```{r}
+library(SimilarityMeasures)
 
 ```
 
