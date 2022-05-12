@@ -4,31 +4,36 @@ output:
 date: "`r Sys.Date()`"
 ---
 
-```{r}
+```{r, message=FALSE, warning=FALSE}
 rm(list = ls())
 
 library(tidyverse)
 ```
 
-```{r}
+```{r, message=FALSE}
 ws <- read_delim("caro60.csv")
 ```
 
 
 # Task 1: Segmentation
 
-The sampling interval for this dataset is 1 minute. Use a temporal window v of 6 minutes, i.e. a window size of 6 positions (n±3).
+The sampling interval for this data set is 1 minute. Use a temporal window v of 6 minutes, i.e. a window size of 6 positions (n±3).
 
 ```{r}
+ws <- transform(ws, E = as.integer(E),
+          N = as.integer(N))
+
 ws_seg <- ws %>% 
     mutate(
-        nMinus3 = sqrt((lag(E,3) - E)^2 + (lag(N,3) - N)^2),
-        nMinus2 = sqrt((lag(E,2) - E)^2 + (lag(N,2) - N)^2),
-        nMinus1 = sqrt((lag(E,1) - E)^2 + (lag(N,1) - N)^2),
-        nPlus1  = sqrt((E - lead(E,1))^2 + (N - lead(N,1))^2),
-        nPlus2  = sqrt((E - lead(E,2))^2 + (N - lead(N,2))^2),
-        nPlus3  = sqrt((E - lead(E,3))^2 + (N - lead(N,3))^2)
+        nMinus3 = sqrt( (lag(E,3) - E)^2  + (lag(N,3) - N)^2  ),
+        nMinus2 = sqrt( (lag(E,2) - E)^2  + (lag(N,2) - N)^2  ),
+        nMinus1 = sqrt( (lag(E,1) - E)^2  + (lag(N,1) - N)^2  ),
+        nPlus1  = sqrt( (E - lead(E,1))^2 + (N - lead(N,1))^2 ),
+        nPlus2  = sqrt( (E - lead(E,2))^2 + (N - lead(N,2))^2 ),
+        nPlus3  = sqrt( (E - lead(E,3))^2 + (N - lead(N,3))^2 )
     )
+
+
 ```
 
 
@@ -48,7 +53,11 @@ ws_seg <- ws_seg %>%
 ```{r}
 d <- mean(ws_seg$stepMean, na.rm = TRUE) # -> threshold d
 
-ws_seg$static <- ws_seg$stepMean <= d
+# ws_seg$static <- ws_seg$stepMean <= d
+
+ws_seg <- ws_seg %>% 
+    ungroup() %>% 
+    mutate(static = stepMean < mean(stepMean, na.rm = TRUE))
 
 ```
 
@@ -57,7 +66,7 @@ ws_seg$static <- ws_seg$stepMean <= d
 
 ```{r}
 ggplot(ws_seg, aes(x = E, y = N)) +
-    geom_path() + 
+    geom_path() +
     geom_point(aes(colour = static)) +
     coord_equal()
 ```
@@ -65,22 +74,71 @@ ggplot(ws_seg, aes(x = E, y = N)) +
 # Task 4: Segment-based analysis
 
 ```{r}
+rle_id <- function(vec){
+  x <- rle(vec)$lengths
+  as.factor(rep(seq_along(x), times=x))
+  }
+
+ws_seg <- ws_seg %>% 
+    mutate(
+        segmentID = rle_id(static)
+    )
+
+# based on T/F in static -> subtrajectories of move and rest partitioned
+```
 
 
+Visualize the moving segments by colourizing them by segment_ID. Then use segment_ID as a grouping variable to determine the segments duration and remove short segments (e.g. segments with a duration < 5 Minutes)
+
+```{r}
+
+ws_seg %>% filter(static == FALSE) %>% 
+    ggplot(aes(E,N, colour = segmentID)) +
+    geom_path() +
+    geom_point() +
+    coord_equal() +
+    theme(legend.position = "none") +
+    labs(title = "All Segments (uncleaned)")
 ```
 
 
 ```{r}
 
+# filtering using tally and store list in sub_traj
+sub_traj <- ws_seg %>% 
+    group_by(segmentID) %>%
+    filter(static == FALSE) %>% 
+    tally() %>% 
+    filter(n > 5)
+
+#filter ws_seg by the list built by tally, sub_traj
+ws_seg <- ws_seg %>% 
+    filter(segmentID %in% sub_traj$segmentID)
+
+
+# to test if it worked
+sub_traj <- ws_seg %>% 
+    group_by(segmentID) %>% 
+    tally()
 
 ```
 
 
 ```{r}
-
+ws_seg %>% filter(static == FALSE) %>% 
+    ggplot(aes(E,N, colour = segmentID)) +
+    geom_path() +
+    geom_point() +
+    coord_equal() +
+    theme(legend.position = "none") +
+    labs(title = "Long Segments (removed Segments < 5)")
 
 ```
 
+## Something was wrong with the stepMean all along (compared to the small snipplet in Task 4 description). I calculated it step by step and found that in the first place, there was a problem with E & N when substracting (resulted in numbers with decimals, which cannot be). This was solved by turning them into integers in the beginning. After that, each step calculation was correct by itself, but the resulting mean differed (often very far) from the numbers in the snipplet. I have absolutely no clue where this comes from and it was reeeaaally annoying trying to solve this... i tried for a long time just because of curiosity. However, i finally gave up and this is the result, where the stepMeans, and therfore the resulting segments and their compositions are wrong.
+
+
+# Task 5: Similarity Measures
 
 ```{r}
 
