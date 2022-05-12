@@ -231,22 +231,22 @@ similarity.df$tj <- c(2, 3, 4, 5, 6)
 
 ```{r}
 
-pl1<- ggplot(data = similarity.df, aes(tj, dtw)) +
+pl1<- ggplot(data = similarity.df, aes(tj, dtw, fill = as.factor(tj))) +
   geom_bar(stat = "identity") +
   theme(legend.position = "none") +
   ggtitle("DTW")
 
-pl2 <- ggplot(data = similarity.df, aes(tj, editDist)) +
+pl2 <- ggplot(data = similarity.df, aes(tj, editDist, fill = as.factor(tj))) +
   geom_bar(stat = "identity") +
   theme(legend.position = "none") +
   ggtitle("editDist")
 
-pl3 <- ggplot(data = similarity.df, aes(tj, frechet)) +
+pl3 <- ggplot(data = similarity.df, aes(tj, frechet, fill = as.factor(tj))) +
   geom_bar(stat = "identity") +
   theme(legend.position = "none") +
   ggtitle("Frechet")
 
-pl4 <- ggplot(data = similarity.df, aes(tj, lcss)) +
+pl4 <- ggplot(data = similarity.df, aes(tj, lcss, fill = as.factor(tj))) +
   geom_bar(stat = "identity") +
   theme(legend.position = "none") +
   ggtitle("LCSS")
